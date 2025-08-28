@@ -5,4 +5,5 @@ RUN npm ci --omit=dev || npm i --omit=dev
 COPY . .
 ENV NODE_ENV=production
 EXPOSE 8080
-CMD ["npm", "start"]
+CMD ["sh", "-lc", "node server/index.js || node backend/index.js || node index.js"]
+
