@@ -1,3 +1,4 @@
+// index.js
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -5,38 +6,52 @@ import formsRouter from "./routes/forms.js";
 
 const app = express();
 
-/**
- * CORS — allow your Vercel app + localhost (scheme-aware)
- * Add any other hosts you deploy to (custom domain, preview URLs, etc.)
- */
-const allowedHosts = new Set([
+// --- CORS: allow your site(s), localhost, and (optionally) Vercel previews ---
+const allowlist = new Set([
   "localhost:5173",
-  "front-dami.vercel.app",
   "heartandcarecleaningservices.ca",
-               
+  "www.heartandcarecleaningservices.ca",
+  "front-dami.vercel.app", // keep if you still use it
 ]);
+
+function isAllowedOrigin(origin) {
+  // Allow requests without an Origin header (curl, server-to-server)
+  if (!origin) return true;
+
+  try {
+    const { protocol, hostname, host } = new URL(origin);
+
+    // Only allow http/https origins
+    if (!/^https?:$/.test(protocol)) return false;
+
+    // Exact host match (host includes port for localhost)
+    if (allowlist.has(host) || allowlist.has(hostname)) return true;
+
+    // (Optional) Allow any Vercel preview domain
+    if (hostname.endsWith(".vercel.app")) return true;
+
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 const corsOptions = {
   origin(origin, cb) {
-    // Allow curl/server-to-server requests (no Origin header)
-    if (!origin) return cb(null, true);
-    try {
-      const { host } = new URL(origin);
-      return cb(null, allowedHosts.has(host));
-    } catch {
-      return cb(null, false);
-    }
+    cb(null, isAllowedOrigin(origin));
   },
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Accept"],
   optionsSuccessStatus: 204,
+  maxAge: 60 * 60 * 24, // cache preflight for 24h
 };
 
-// Apply CORS globally + handle preflight on /api/*
+// Apply CORS globally (covers normal + preflight)
 app.use(cors(corsOptions));
-app.options("/api/*", cors(corsOptions));
+// Be explicit for any OPTIONS path (wildcard catches all)
+app.options("*", cors(corsOptions));
 
-// Parse JSON bodies (must be before routes)
+// Parse JSON bodies before routes
 app.use(express.json());
 
 // Health check
@@ -54,5 +69,5 @@ app.use((req, res) => {
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log(`API listening on :${port}`);
-  console.log("Allowed CORS hosts:", [...allowedHosts].join(", "));
+  console.log("Allowed CORS hosts:", [...allowlist].join(", "));
 });
