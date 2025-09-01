@@ -12,7 +12,7 @@ const app = express();
 const allowedHosts = new Set([
   "localhost:5173",
   "front-dami.vercel.app",
-  "heartandcarecleaningservices.ca"
+  "heartandcarecleaningservices.ca",
                
 ]);
 
