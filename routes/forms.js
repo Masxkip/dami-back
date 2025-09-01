@@ -24,18 +24,19 @@ router.post("/contact", async (req, res) => {
   try {
     const mailer = getMailer();
     const info = await mailer.sendMail({
-      from: `"${senderName}" <no-reply@yourdomain.test>`,
-      to: process.env.CONTACT_TO || process.env.SMTP_USER || "owner@example.com",
-      subject: `Contact form — ${senderName}`,
-      replyTo: email,
-      html: `
-        <h2>New Contact</h2>
-        <p><b>Name:</b> ${senderName}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Phone:</b> ${phone || "-"}</p>
-        <p><b>Message:</b><br>${nl2br(message)}</p>
-      `,
-    });
+    from: { name: senderName, address: FROM_ADDR },   // 👈 uses your IONOS mailbox
+    to: process.env.CONTACT_TO || process.env.SMTP_USER || "owner@example.com",
+    subject: `Contact form — ${senderName}`,
+    replyTo: email,                                    // 👈 
+    html: `
+      <h2>New Contact</h2>
+      <p><b>Name:</b> ${senderName}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Phone:</b> ${phone || "-"}</p>
+      <p><b>Message:</b><br>${nl2br(message)}</p>
+    `,
+  });
+
 
     const preview = mailer._isEthereal ? nodemailer.getTestMessageUrl(info) : null;
     res.json({ ok: true, preview });
@@ -60,12 +61,12 @@ router.post("/quote", async (req, res) => {
   try {
     const mailer = getMailer();
     const info = await mailer.sendMail({
-      from: `"${senderName}" <no-reply@yourdomain.test>`,
-      to: process.env.QUOTE_TO || process.env.CONTACT_TO || process.env.SMTP_USER || "owner@example.com",
-      subject: `Quote request — ${senderName}`,
-      replyTo: email || undefined,
-      html: `<h2>New Quote Request</h2>${rows || "<p>(No fields submitted)</p>"}`,
-    });
+    from: { name: senderName, address: FROM_ADDR },   // 👈 uses your IONOS mailbox
+    to: process.env.QUOTE_TO || process.env.CONTACT_TO || process.env.SMTP_USER || "owner@example.com",
+    subject: `Quote request — ${senderName}`,
+    replyTo: email || undefined,
+    html: `<h2>New Quote Request</h2>${rows || "<p>(No fields submitted)</p>"}`,
+  });
 
     const preview = mailer._isEthereal ? nodemailer.getTestMessageUrl(info) : null;
     res.json({ ok: true, preview });
