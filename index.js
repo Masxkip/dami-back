@@ -12,8 +12,8 @@ const app = express();
 const allowedHosts = new Set([
   "localhost:5173",
   "front-dami.vercel.app",
-  // "front-dami-git-main-<your-user>.vercel.app", // <- optional: preview builds
-  // "www.bluediamondlondon.ca",                    // <- optional: custom domain
+  "heartandcarecleaningservices.ca"
+               
 ]);
 
 const corsOptions = {
